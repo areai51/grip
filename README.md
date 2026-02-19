@@ -2,7 +2,7 @@
 <h1>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/fe853809-ba8b-400b-83ab-a9a0da25be8a" alt="Logo" width="128">
-  <br>Ghostty
+  <br>GRIP
 </h1>
   <p align="center">
     Fast, native, feature-rich terminal emulator pushing modern features.
@@ -21,43 +21,43 @@
 
 ## About
 
-Ghostty is a terminal emulator that differentiates itself by being
+GRIP is a terminal emulator that differentiates itself by being
 fast, feature-rich, and native. While there are many excellent terminal
 emulators available, they all force you to choose between speed,
-features, or native UIs. Ghostty provides all three.
+features, or native UIs. GRIP provides all three.
 
-In all categories, I am not trying to claim that Ghostty is the
+In all categories, I am not trying to claim that GRIP is the
 best (i.e. the fastest, most feature-rich, or most native). But
-Ghostty is competitive in all three categories and Ghostty
+GRIP is competitive in all three categories and GRIP
 doesn't make you choose between them.
 
-Ghostty also intends to push the boundaries of what is possible with a
+GRIP also intends to push the boundaries of what is possible with a
 terminal emulator by exposing modern, opt-in features that enable CLI tool
 developers to build more feature rich, interactive applications.
 
-While aiming for this ambitious goal, our first step is to make Ghostty
+While aiming for this ambitious goal, our first step is to make GRIP
 one of the best fully standards compliant terminal emulator, remaining
 compatible with all existing shells and software while supporting all of
-the latest terminal innovations in the ecosystem. You can use Ghostty
+the latest terminal innovations in the ecosystem. You can use GRIP
 as a drop-in replacement for your existing terminal emulator.
 
-For more details, see [About Ghostty](https://ghostty.org/docs/about).
+For more details on the original project's philosophy, see [Ghostty's about page](https://ghostty.org/docs/about).
 
 ## Download
 
-See the [download page](https://ghostty.org/download) on the Ghostty website.
+See the [download page](https://ghostty.org/download) on the original Ghostty website.
 
 ## Documentation
 
-See the [documentation](https://ghostty.org/docs) on the Ghostty website.
+See the [documentation](https://ghostty.org/docs) on the original Ghostty website.
 
 ## Contributing and Developing
 
-If you have any ideas, issues, etc. regarding Ghostty, or would like to
-contribute to Ghostty through pull requests, please check out our
-["Contributing to Ghostty"](CONTRIBUTING.md) document. Those who would like
-to get involved with Ghostty's development as well should also read the
-["Developing Ghostty"](HACKING.md) document for more technical details.
+If you have any ideas, issues, etc. regarding GRIP, or would like to
+contribute to GRIP through pull requests, please check out our
+["Contributing to GRIP"](CONTRIBUTING.md) document. Those who would like
+to get involved with GRIP's development as well should also read the
+["Developing GRIP"](HACKING.md) document for more technical details.
 
 ## Roadmap and Status
 
