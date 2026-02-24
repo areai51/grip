@@ -47,16 +47,16 @@ class ServiceProvider: NSObject {
         )
 
         for url in directoryURLs {
-            var config = Ghostty.SurfaceConfiguration()
+            var config = Grip.SurfaceConfiguration()
             config.workingDirectory = url.path(percentEncoded: false)
 
             switch (target) {
             case .window:
-                _ = TerminalController.newWindow(delegate.ghostty, withBaseConfig: config)
+                _ = TerminalController.newWindow(delegate.grip, withBaseConfig: config)
 
             case .tab:
                 _ = TerminalController.newTab(
-                    delegate.ghostty,
+                    delegate.grip,
                     from: TerminalController.preferredParent?.window,
                     withBaseConfig: config)
             }

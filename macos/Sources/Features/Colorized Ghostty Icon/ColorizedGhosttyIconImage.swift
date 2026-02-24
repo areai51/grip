@@ -1,8 +1,8 @@
 import SwiftUI
 
 extension View {
-    /// Returns the ghostty icon to use for views.
-    func ghosttyIconImage() -> Image {
+    /// Returns the grip icon to use for views.
+    func gripIconImage() -> Image {
         #if os(macOS)
         // If we have a specific icon set, then use that
         if let delegate = NSApplication.shared.delegate as? AppDelegate,

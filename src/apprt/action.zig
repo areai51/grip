@@ -112,6 +112,9 @@ pub const Action = union(Key) {
     /// Toggle the command palette. This currently only works on macOS.
     toggle_command_palette,
 
+    /// Open the AI assistant panel for natural language command generation.
+    open_ai_panel,
+
     /// Toggle the visibility of all Ghostty terminal windows.
     toggle_visibility,
 
@@ -349,6 +352,7 @@ pub const Action = union(Key) {
         toggle_window_decorations,
         toggle_quick_terminal,
         toggle_command_palette,
+        open_ai_panel,
         toggle_visibility,
         toggle_background_opacity,
         move_tab,

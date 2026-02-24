@@ -277,7 +277,7 @@ enum UpdateState: Equatable {
         let reply: @Sendable (SPUUserUpdateChoice) -> Void
         
         var releaseNotes: ReleaseNotes? {
-            let currentCommit = Bundle.main.infoDictionary?["GhosttyCommit"] as? String
+            let currentCommit = Bundle.main.infoDictionary?["GripCommit"] as? String
             return ReleaseNotes(displayVersionString: appcastItem.displayVersionString, currentCommit: currentCommit)
         }
     }
@@ -293,7 +293,7 @@ enum UpdateState: Equatable {
             // Check for semantic version (x.y.z)
             if let semver = Self.extractSemanticVersion(from: version) {
                 let slug = semver.replacingOccurrences(of: ".", with: "-")
-                if let url = URL(string: "https://ghostty.org/docs/install/release-notes/\(slug)") {
+                if let url = URL(string: "https://grip.org/docs/install/release-notes/\(slug)") {
                     self = .tagged(url)
                     return
                 }
@@ -305,9 +305,9 @@ enum UpdateState: Equatable {
             }
             
             if let currentHash = currentCommit, !currentHash.isEmpty,
-               let url = URL(string: "https://github.com/ghostty-org/ghostty/compare/\(currentHash)...\(newHash)") {
+               let url = URL(string: "https://github.com/grip-org/grip/compare/\(currentHash)...\(newHash)") {
                 self = .compareTip(url)
-            } else if let url = URL(string: "https://github.com/ghostty-org/ghostty/commit/\(newHash)") {
+            } else if let url = URL(string: "https://github.com/grip-org/grip/commit/\(newHash)") {
                 self = .commit(url)
             } else {
                 return nil
@@ -364,7 +364,7 @@ enum UpdateState: Equatable {
     }
     
     struct Installing {
-        /// True if this state is triggered by ``Ghostty/UpdateDriver/updater(_:willInstallUpdateOnQuit:immediateInstallationBlock:)``
+        /// True if this state is triggered by ``Grip/UpdateDriver/updater(_:willInstallUpdateOnQuit:immediateInstallationBlock:)``
         var isAutoUpdate = false
         let retryTerminatingApplication: () -> Void
         let dismiss: () -> Void

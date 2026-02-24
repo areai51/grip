@@ -1,6 +1,6 @@
 //
-//  GhosttyTests.swift
-//  GhosttyTests
+//  GripTests.swift
+//  GripTests
 //
 //  Created by Mitchell Hashimoto on 7/9/25.
 //
@@ -27,6 +27,6 @@ struct BenchmarkTests {
     @Test func example() async throws {
         ghostty_benchmark_cli(
             "terminal-stream",
-            "--data=/Users/mitchellh/Documents/ghostty/bug.osc.txt")
+            "--data=/Users/mitchellh/Documents/grip/bug.osc.txt")
     }
 }

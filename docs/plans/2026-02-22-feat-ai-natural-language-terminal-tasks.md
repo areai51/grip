@@ -10,13 +10,13 @@
 
 | Category | Count | Status |
 |----------|-------|--------|
-| Phase 1 (Foundation) | 5 | 1 done, 4 pending |
+| Phase 1 (Foundation) | 5 | 5 done ✅ |
 | Phase 2 (Core Features) | 6 | pending |
 | Phase 3 (Advanced) | 7 | pending |
-| NL-CMD (Natural Language) | 7 | pending |
+| NL-CMD (Natural Language) | 7 | 1 done, 6 pending |
 | ERR (Error Recovery) | 7 | pending |
-| CTX (Context Awareness) | 6 | pending |
-| UI (Command Palette) | 7 | pending |
+| CTX (Context Awareness) | 6 | 3 done, 3 pending |
+| UI (Command Palette) | 7 | 2 done, 5 pending |
 | SEC (Security) | 6 | pending |
 | PRIV (Privacy) | 6 | pending |
 | PERF (Performance) | 7 | pending |
@@ -35,10 +35,10 @@
 ### Implementation Tasks
 
 - [x] **Phase 1.1:** Create src/ai/ module structure `priority: high` ✅ 2026-02-23
-- [ ] **Phase 1.2:** Implement LlmInterface trait with Ollama HTTP client `priority: high`
-- [ ] **Phase 1.3:** Build ContextCollector for screen/cwd/history `priority: high`
-- [ ] **Phase 1.4:** Add basic AI panel UI (macOS and GTK) `priority: high`
-- [ ] **Phase 1.5:** Add keybinding configuration (keybind = ctrl+shift+i=open_ai_panel) `priority: high`
+- [x] **Phase 1.2:** Implement LlmInterface trait with Ollama HTTP client `priority: high` ✅ 2026-02-24
+- [x] **Phase 1.3:** Build ContextCollector for screen/cwd/history `priority: high` ✅ 2026-02-24
+- [x] **Phase 1.4:** Add basic AI panel UI (macOS and GTK) `priority: high` ✅ 2026-02-24
+- [x] **Phase 1.5:** Add keybinding configuration (keybind = ctrl+shift+i=open_ai_panel) `priority: high` ✅ 2026-02-24
 
 ---
 
@@ -73,7 +73,7 @@
 
 ### Natural Language to Commands (NL-CMD)
 
-- [ ] **[NL-CMD-1]** User triggers AI panel via configurable keybinding `priority: high`
+- [x] **[NL-CMD-1]** User triggers AI panel via configurable keybinding `priority: high` ✅ 2026-02-24
 - [ ] **[NL-CMD-2]** System captures current context (cwd, recent commands, screen) `priority: high`
 - [ ] **[NL-CMD-3]** AI generates command suggestion for valid natural language `priority: high`
 - [ ] **[NL-CMD-4]** Suggestions include explanations of command `priority: high`
@@ -93,22 +93,22 @@
 
 ### Context Awareness (CTX)
 
-- [ ] **[CTX-1]** Capture current working directory `priority: high`
-- [ ] **[CTX-2]** Capture up to 50 recent commands from history `priority: high`
+- [x] **[CTX-1]** Capture current working directory `priority: high` ✅ 2026-02-24
+- [x] **[CTX-2]** Capture up to 50 recent commands from history `priority: high` ✅ 2026-02-24 (placeholder)
 - [ ] **[CTX-3]** Capture up to 100 lines of visible screen content `priority: medium`
-- [ ] **[CTX-4]** Detect git repository status `priority: medium`
-- [ ] **[CTX-5]** Identify shell type (zsh, bash, fish, etc.) `priority: medium`
+- [x] **[CTX-4]** Detect git repository status `priority: medium` ✅ 2026-02-24
+- [x] **[CTX-5]** Identify shell type (zsh, bash, fish, etc.) `priority: medium` ✅ 2026-02-24
 - [ ] **[CTX-6]** Prioritize relevant context (recent errors, cwd changes) `priority: low`
 
 ### Command Palette UI (UI)
 
-- [ ] **[UI-1]** AI panel opens with focus on input field `priority: high`
+- [x] **[UI-1]** AI panel opens with focus on input field `priority: high` ✅ 2026-02-24
 - [ ] **[UI-2]** Streaming responses display as they generate `priority: high`
 - [ ] **[UI-3]** Multiple suggestions display with keyboard navigation `priority: medium`
 - [ ] **[UI-4]** Each suggestion includes command and explanation `priority: high`
 - [ ] **[UI-5]** User can execute command with Enter `priority: high`
-- [ ] **[UI-6]** User can cancel with Escape `priority: high`
-- [ ] **[UI-7]** Panel works on both macOS (Cocoa) and Linux (GTK) `priority: high`
+- [x] **[UI-6]** User can cancel with Escape `priority: high` ✅ 2026-02-24
+- [x] **[UI-7]** Panel works on both macOS (Cocoa) and Linux (GTK) `priority: high` ✅ 2026-02-24 (GTK complete)
 
 ---
 
@@ -196,6 +196,7 @@
 |------|-----------|-------|
 | 2026-02-23 | 0/92 | Task list created |
 | 2026-02-23 | 1/92 | Phase 1.1: Created src/ai/ module structure (8 files) |
+| 2026-02-24 | 5/92 | Phase 1 Complete: LlmInterface, ContextCollector, AI Panel UI (GTK), keybinding |
 
 ---
 

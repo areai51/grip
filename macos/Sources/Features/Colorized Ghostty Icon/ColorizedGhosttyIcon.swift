@@ -1,6 +1,6 @@
 import Cocoa
 
-struct ColorizedGhosttyIcon {
+struct ColorizedGripIcon {
     /// The colors that make up the gradient of the screen.
     let screenColors: [NSColor]
 
@@ -8,9 +8,9 @@ struct ColorizedGhosttyIcon {
     let ghostColor: NSColor
 
     /// The frame type to use
-    let frame: Ghostty.MacOSIconFrame
+    let frame: Grip.MacOSIconFrame
 
-    /// Make a custom colorized ghostty icon.
+    /// Make a custom colorized grip icon.
     func makeImage() -> NSImage? {
         // All of our layers (not in order)
         guard let screen = NSImage(named: "CustomIconScreen") else { return nil }

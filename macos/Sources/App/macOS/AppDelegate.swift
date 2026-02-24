@@ -9,7 +9,7 @@ class AppDelegate: NSObject,
                     ObservableObject,
                     NSApplicationDelegate,
                     UNUserNotificationCenterDelegate,
-                    GhosttyAppDelegate
+                    GripAppDelegate
 {
     // The application logger. We should probably move this at some point to a dedicated
     // class/struct but for now it lives here! 🤷‍♂️
@@ -18,7 +18,7 @@ class AppDelegate: NSObject,
         category: String(describing: AppDelegate.self)
     )
 
-    /// Various menu items so that we can programmatically sync the keyboard shortcut with the Ghostty config
+    /// Various menu items so that we can programmatically sync the keyboard shortcut with the Grip config
     @IBOutlet private var menuAbout: NSMenuItem?
     @IBOutlet private var menuServices: NSMenu?
     @IBOutlet private var menuCheckForUpdates: NSMenuItem?
@@ -93,11 +93,11 @@ class AppDelegate: NSObject,
     /// seconds since the process was launched.
     private var applicationLaunchTime: TimeInterval = 0
 
-    /// This is the current configuration from the Ghostty configuration that we need.
+    /// This is the current configuration from the Grip configuration that we need.
     private var derivedConfig: DerivedConfig = DerivedConfig()
 
-    /// The ghostty global state. Only one per process.
-    let ghostty: Ghostty.App
+    /// The grip global state. Only one per process.
+    let grip: Grip.App
 
     /// The global undo manager for app-level state such as window restoration.
     lazy var undoManager = ExpiringUndoManager()
@@ -113,7 +113,7 @@ class AppDelegate: NSObject,
             
         case .pendingRestore(let state):
             let controller = QuickTerminalController(
-                ghostty,
+                grip,
                 position: derivedConfig.quickTerminalPosition,
                 baseConfig: state.baseConfig,
                 restorationState: state
@@ -123,7 +123,7 @@ class AppDelegate: NSObject,
             
         case .uninitialized:
             let controller = QuickTerminalController(
-                ghostty,
+                grip,
                 position: derivedConfig.quickTerminalPosition,
                 restorationState: nil
             )
@@ -157,13 +157,13 @@ class AppDelegate: NSObject,
 
     override init() {
 #if DEBUG
-        ghostty = Ghostty.App(configPath: ProcessInfo.processInfo.environment["GHOSTTY_CONFIG_PATH"])
+        grip = Grip.App(configPath: ProcessInfo.processInfo.environment["GHOSTTY_CONFIG_PATH"])
 #else
-        ghostty = Ghostty.App()
+        grip = Grip.App()
 #endif
         super.init()
 
-        ghostty.delegate = self
+        grip.delegate = self
     }
 
     //MARK: - NSApplicationDelegate
@@ -202,7 +202,7 @@ class AppDelegate: NSObject,
         }
 
         // Initial config loading
-        ghosttyConfigDidChange(config: ghostty.config)
+        gripConfigDidChange(config: grip.config)
 
         // Start our update checker.
         updateController.startUpdater()
@@ -210,7 +210,7 @@ class AppDelegate: NSObject,
         // Register our service provider. This must happen after everything is initialized.
         NSApp.servicesProvider = ServiceProvider()
 
-        // This registers the Ghostty => Services menu to exist.
+        // This registers the Grip => Services menu to exist.
         NSApp.servicesMenu = menuServices
 
         // Setup a local event monitor for app-level keyboard shortcuts. See
@@ -234,37 +234,37 @@ class AppDelegate: NSObject,
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(ghosttyConfigDidChange(_:)),
-            name: .ghosttyConfigDidChange,
+            selector: #selector(gripConfigDidChange(_:)),
+            name: .gripConfigDidChange,
             object: nil
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(ghosttyBellDidRing(_:)),
-            name: .ghosttyBellDidRing,
+            selector: #selector(gripBellDidRing(_:)),
+            name: .gripBellDidRing,
             object: nil
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(ghosttyNewWindow(_:)),
-            name: Ghostty.Notification.ghosttyNewWindow,
+            selector: #selector(gripNewWindow(_:)),
+            name: Grip.Notification.gripNewWindow,
             object: nil)
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(ghosttyNewTab(_:)),
-            name: Ghostty.Notification.ghosttyNewTab,
+            selector: #selector(gripNewTab(_:)),
+            name: Grip.Notification.gripNewTab,
             object: nil)
 
         // Configure user notifications
         let actions = [
-            UNNotificationAction(identifier: Ghostty.userNotificationActionShow, title: "Show")
+            UNNotificationAction(identifier: Grip.userNotificationActionShow, title: "Show")
         ]
 
         let center = UNUserNotificationCenter.current()
 
         center.setNotificationCategories([
             UNNotificationCategory(
-                identifier: Ghostty.userNotificationCategory,
+                identifier: Grip.userNotificationCategory,
                 actions: actions,
                 intentIdentifiers: [],
                 options: [.customDismissAction]
@@ -272,13 +272,13 @@ class AppDelegate: NSObject,
         ])
         center.delegate = self
 
-        // Observe our appearance so we can report the correct value to libghostty.
+        // Observe our appearance so we can report the correct value to libgrip.
         self.appearanceObserver = NSApplication.shared.observe(
             \.effectiveAppearance,
              options: [.new, .initial]
         ) { _, change in
             guard let appearance = change.newValue else { return }
-            guard let app = self.ghostty.app else { return }
+            guard let app = self.grip.app else { return }
             let scheme: ghostty_color_scheme_e
             if (appearance.isDark) {
                 scheme = GHOSTTY_COLOR_SCHEME_DARK
@@ -295,7 +295,7 @@ class AppDelegate: NSObject,
         // Setup signal handlers
         setupSignals()
 
-        switch Ghostty.launchSource {
+        switch Grip.launchSource {
         case .app:
             // Don't have to do anything.
             break
@@ -341,7 +341,7 @@ class AppDelegate: NSObject,
             //   - if we're restoring from persisted state
             if TerminalController.all.isEmpty && derivedConfig.initialWindow {
                 undoManager.disableUndoRegistration()
-                _ = TerminalController.newWindow(ghostty)
+                _ = TerminalController.newWindow(grip)
                 undoManager.enableUndoRegistration()
             }
         }
@@ -374,7 +374,7 @@ class AppDelegate: NSObject,
 
         // If the user is shutting down, restarting, or logging out, we don't confirm quit.
         why: if let event = NSAppleEventManager.shared().currentAppleEvent {
-            // If all Ghostty windows are in the background (i.e. you Cmd-Q from the Cmd-Tab
+            // If all Grip windows are in the background (i.e. you Cmd-Q from the Cmd-Tab
             // view), then this is null. I don't know why (pun intended) but we have to
             // guard against it.
             guard let keyword = AEKeyword("why?") else { break why }
@@ -397,13 +397,13 @@ class AppDelegate: NSObject,
         }
 
         // If our app says we don't need to confirm, we can exit now.
-        if (!ghostty.needsConfirmQuit) { return .terminateNow }
+        if (!grip.needsConfirmQuit) { return .terminateNow }
 
         // We have some visible window. Show an app-wide modal to confirm quitting.
         let alert = NSAlert()
-        alert.messageText = "Quit Ghostty?"
+        alert.messageText = "Quit Grip?"
         alert.informativeText = "All terminal sessions will be terminated."
-        alert.addButton(withTitle: "Close Ghostty")
+        alert.addButton(withTitle: "Close Grip")
         alert.addButton(withTitle: "Cancel")
         alert.alertStyle = .warning
         switch (alert.runModal()) {
@@ -441,12 +441,12 @@ class AppDelegate: NSObject,
         guard applicationHasBecomeActive else { return true }
 
         // No visible windows, open a new one.
-        _ = TerminalController.newWindow(ghostty)
+        _ = TerminalController.newWindow(grip)
         return false
     }
 
     func application(_ sender: NSApplication, openFile filename: String) -> Bool {
-        // Ghostty will validate as well but we can avoid creating an entirely new
+        // Grip will validate as well but we can avoid creating an entirely new
         // surface by doing our own validation here. We can also show a useful error
         // this way.
         
@@ -458,7 +458,7 @@ class AppDelegate: NSObject,
         var requiresConfirm: Bool = false
         
         // Initialize the surface config which will be used to create the tab or window for the opened file.
-        var config = Ghostty.SurfaceConfiguration()
+        var config = Grip.SurfaceConfiguration()
         
         if (isDirectory.boolValue) {
             // When opening a directory, check the configuration to decide
@@ -477,7 +477,7 @@ class AppDelegate: NSObject,
             // profile/rc files for the shell, which is super important on macOS
             // due to things like Homebrew. Instead, we set the command to
             // `<filename>; exit` which is what Terminal and iTerm2 do.
-            config.initialInput = "\(Ghostty.Shell.quote(filename)); exit\n"
+            config.initialInput = "\(Grip.Shell.quote(filename)); exit\n"
             
             // For commands executed directly, we want to ensure we wait after exit
             // because in most cases scripts don't block on exit and we don't want
@@ -494,7 +494,7 @@ class AppDelegate: NSObject,
             // may want to show this as a sheet on the focused window (especially if we're
             // opening a tab). I'm not sure.
             let alert = NSAlert()
-            alert.messageText = "Allow Ghostty to execute \"\(filename)\"?"
+            alert.messageText = "Allow Grip to execute \"\(filename)\"?"
             alert.addButton(withTitle: "Allow")
             alert.addButton(withTitle: "Cancel")
             alert.alertStyle = .warning
@@ -507,14 +507,14 @@ class AppDelegate: NSObject,
             }
         }
         
-        switch ghostty.config.macosDockDropBehavior {
+        switch grip.config.macosDockDropBehavior {
         case .new_tab:
             _ = TerminalController.newTab(
-                ghostty,
+                grip,
                 from: TerminalController.preferredParent?.window,
                 withBaseConfig: config
             )
-        case .new_window: _ = TerminalController.newWindow(ghostty, withBaseConfig: config)
+        case .new_window: _ = TerminalController.newWindow(grip, withBaseConfig: config)
         }
         
         return true
@@ -541,8 +541,8 @@ class AppDelegate: NSObject,
         let sigusr2 = DispatchSource.makeSignalSource(signal: SIGUSR2, queue: .main)
         sigusr2.setEventHandler { [weak self] in
             guard let self else { return }
-            Ghostty.logger.info("reloading configuration in response to SIGUSR2")
-            self.ghostty.reloadConfig()
+            Grip.logger.info("reloading configuration in response to SIGUSR2")
+            self.grip.reloadConfig()
         }
 
         // The signal source starts unactivated, so we have to resume it once
@@ -597,9 +597,9 @@ class AppDelegate: NSObject,
         self.menuFindParent?.setImageIfDesired(systemSymbolName: "text.page.badge.magnifyingglass")
     }
 
-    /// Sync all of our menu item keyboard shortcuts with the Ghostty configuration.
-    private func syncMenuShortcuts(_ config: Ghostty.Config) {
-        guard ghostty.readiness == .ready else { return }
+    /// Sync all of our menu item keyboard shortcuts with the Grip configuration.
+    private func syncMenuShortcuts(_ config: Grip.Config) {
+        guard grip.readiness == .ready else { return }
 
         syncMenuShortcut(config, action: "check_for_updates", menuItem: self.menuCheckForUpdates)
         syncMenuShortcut(config, action: "open_config", menuItem: self.menuOpenConfig)
@@ -657,7 +657,7 @@ class AppDelegate: NSObject,
         syncMenuShortcut(config, action: "toggle_secure_input", menuItem: self.menuSecureInput)
 
         // This menu item is NOT synced with the configuration because it disables macOS
-        // global fullscreen keyboard shortcut. The shortcut in the Ghostty config will continue
+        // global fullscreen keyboard shortcut. The shortcut in the Grip config will continue
         // to work but it won't be reflected in the menu item.
         //
         // syncMenuShortcut(config, action: "toggle_fullscreen", menuItem: self.menuToggleFullScreen)
@@ -667,8 +667,8 @@ class AppDelegate: NSObject,
     }
 
     /// Syncs a single menu shortcut for the given action. The action string is the same
-    /// action string used for the Ghostty configuration.
-    private func syncMenuShortcut(_ config: Ghostty.Config, action: String, menuItem: NSMenuItem?) {
+    /// action string used for the Grip configuration.
+    private func syncMenuShortcut(_ config: Grip.Config, action: String, menuItem: NSMenuItem?) {
         guard let menu = menuItem else { return }
         guard let shortcut = config.keyboardShortcut(for: action) else {
             // No shortcut, clear the menu item
@@ -713,18 +713,18 @@ class AppDelegate: NSObject,
         guard NSApp.mainWindow == nil else { return event }
 
         // If this event as-is would result in a key binding then we send it.
-        if let app = ghostty.app {
-            var ghosttyEvent = event.ghosttyKeyEvent(GHOSTTY_ACTION_PRESS)
+        if let app = grip.app {
+            var gripEvent = event.gripKeyEvent(GHOSTTY_ACTION_PRESS)
             let match = (event.characters ?? "").withCString { ptr in
-                ghosttyEvent.text = ptr
-                if !ghostty_app_key_is_binding(app, ghosttyEvent) {
+                gripEvent.text = ptr
+                if !ghostty_app_key_is_binding(app, gripEvent) {
                     return false
                 }
 
-                return ghostty_app_key(app, ghosttyEvent)
+                return ghostty_app_key(app, gripEvent)
             }
 
-            // If the key was handled by Ghostty we stop the event chain. If
+            // If the key was handled by Grip we stop the event chain. If
             // the key wasn't handled then we let it fall through and continue
             // processing. This is important because some bindings may have no
             // affect at this scope.
@@ -740,15 +740,15 @@ class AppDelegate: NSObject,
         }
 
         // If we reach this point then we try to process the key event
-        // through the Ghostty key mechanism.
+        // through the Grip key mechanism.
 
-        // Ghostty must be loaded
-        guard let ghostty = self.ghostty.app else { return event }
+        // Grip must be loaded
+        guard let grip = self.grip.app else { return event }
 
-        // Build our event input and call ghostty
-        if (ghostty_app_key(ghostty, event.ghosttyKeyEvent(GHOSTTY_ACTION_PRESS))) {
+        // Build our event input and call grip
+        if (ghostty_app_key(grip, event.gripKeyEvent(GHOSTTY_ACTION_PRESS))) {
             // The key was used so we want to stop it from going to our Mac app
-            Ghostty.logger.debug("local key event handled event=\(event)")
+            Grip.logger.debug("local key event handled event=\(event)")
             return nil
         }
 
@@ -764,33 +764,33 @@ class AppDelegate: NSObject,
         self.menuQuickTerminal?.state = if (quickController.visible) { .on } else { .off }
     }
 
-    @objc private func ghosttyConfigDidChange(_ notification: Notification) {
+    @objc private func gripConfigDidChange(_ notification: Notification) {
         // We only care if the configuration is a global configuration, not a surface one.
         guard notification.object == nil else { return }
 
         // Get our managed configuration object out
         guard let config = notification.userInfo?[
-            Notification.Name.GhosttyConfigChangeKey
-        ] as? Ghostty.Config else { return }
+            Notification.Name.GripConfigChangeKey
+        ] as? Grip.Config else { return }
 
-        ghosttyConfigDidChange(config: config)
+        gripConfigDidChange(config: config)
     }
 
-    @objc private func ghosttyBellDidRing(_ notification: Notification) {
-        if (ghostty.config.bellFeatures.contains(.system)) {
+    @objc private func gripBellDidRing(_ notification: Notification) {
+        if (grip.config.bellFeatures.contains(.system)) {
             NSSound.beep()
         }
 
-        if (ghostty.config.bellFeatures.contains(.attention)) {
+        if (grip.config.bellFeatures.contains(.attention)) {
             // Bounce the dock icon if we're not focused.
             NSApp.requestUserAttention(.informationalRequest)
 
             // Handle setting the dock badge based on permissions
-            ghosttyUpdateBadgeForBell()
+            gripUpdateBadgeForBell()
         }
     }
 
-    private func ghosttyUpdateBadgeForBell() {
+    private func gripUpdateBadgeForBell() {
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { settings in
             switch settings.authorizationStatus {
@@ -829,24 +829,24 @@ class AppDelegate: NSObject,
         }
     }
 
-    @objc private func ghosttyNewWindow(_ notification: Notification) {
-        let configAny = notification.userInfo?[Ghostty.Notification.NewSurfaceConfigKey]
-        let config = configAny as? Ghostty.SurfaceConfiguration
-        _ = TerminalController.newWindow(ghostty, withBaseConfig: config)
+    @objc private func gripNewWindow(_ notification: Notification) {
+        let configAny = notification.userInfo?[Grip.Notification.NewSurfaceConfigKey]
+        let config = configAny as? Grip.SurfaceConfiguration
+        _ = TerminalController.newWindow(grip, withBaseConfig: config)
     }
 
-    @objc private func ghosttyNewTab(_ notification: Notification) {
-        guard let surfaceView = notification.object as? Ghostty.SurfaceView else { return }
+    @objc private func gripNewTab(_ notification: Notification) {
+        guard let surfaceView = notification.object as? Grip.SurfaceView else { return }
         guard let window = surfaceView.window else { return }
 
         // We only want to listen to new tabs if the focused parent is
         // a regular terminal controller.
         guard window.windowController is TerminalController else { return }
 
-        let configAny = notification.userInfo?[Ghostty.Notification.NewSurfaceConfigKey]
-        let config = configAny as? Ghostty.SurfaceConfiguration
+        let configAny = notification.userInfo?[Grip.Notification.NewSurfaceConfigKey]
+        let config = configAny as? Grip.SurfaceConfiguration
 
-        _ = TerminalController.newTab(ghostty, from: window, withBaseConfig: config)
+        _ = TerminalController.newTab(grip, from: window, withBaseConfig: config)
     }
 
     private func setDockBadge(_ label: String? = "•") {
@@ -854,7 +854,7 @@ class AppDelegate: NSObject,
         NSApp.dockTile.display()
     }
 
-    private func ghosttyConfigDidChange(config: Ghostty.Config) {
+    private func gripConfigDidChange(config: Grip.Config) {
         // Update the config we need to store
         self.derivedConfig = DerivedConfig(config)
 
@@ -882,7 +882,7 @@ class AppDelegate: NSObject,
                 autoUpdate == .download
             /**
              To test `auto-update` easily, uncomment the line below and
-             delete `SUEnableAutomaticChecks` in Ghostty-Info.plist.
+             delete `SUEnableAutomaticChecks` in Grip-Info.plist.
 
              Note: When `auto-update = download`, you may need to
              `Clean Build Folder` if a background install has already begun.
@@ -918,8 +918,8 @@ class AppDelegate: NSObject,
         }
 
         // We need to handle our global event tap depending on if there are global
-        // events that we care about in Ghostty.
-        if (ghostty_app_has_global_keybinds(ghostty.app!)) {
+        // events that we care about in Grip.
+        if (ghostty_app_has_global_keybinds(grip.app!)) {
             if (timeSinceLaunch > 5) {
                 // If the process has been running for awhile we enable right away
                 // because no windows are likely to pop up.
@@ -941,14 +941,14 @@ class AppDelegate: NSObject,
     }
 
     /// Sync the appearance of our app with the theme specified in the config.
-    private func syncAppearance(config: Ghostty.Config) {
-        NSApplication.shared.appearance = .init(ghosttyConfig: config)
+    private func syncAppearance(config: Grip.Config) {
+        NSApplication.shared.appearance = .init(gripConfig: config)
     }
 
     // Using AppIconActor to ensure this work
     // happens synchronously in the background
     @AppIconActor
-    private func updateAppIcon(from config: Ghostty.Config) async  {
+    private func updateAppIcon(from config: Grip.Config) async  {
         var appIcon: NSImage?
         var appIconName: String? = config.macosIcon.rawValue
 
@@ -971,7 +971,7 @@ class AppDelegate: NSObject,
             appIconName = nil
             guard let ghostColor = config.macosIconGhostColor else { break }
             guard let screenColors = config.macosIconScreenColor else { break }
-            guard let icon = ColorizedGhosttyIcon(
+            guard let icon = ColorizedGripIcon(
                 screenColors: screenColors,
                 ghostColor: ghostColor,
                 frame: config.macosIconFrame
@@ -988,8 +988,8 @@ class AppDelegate: NSObject,
 
         // Only change the icon if it has actually changed from the current one,
         // or if the app build has changed (e.g. after an update that reset the icon)
-        let cachedIconName = UserDefaults.standard.string(forKey: "CustomGhosttyIcon")
-        let cachedIconBuild = UserDefaults.standard.string(forKey: "CustomGhosttyIconBuild")
+        let cachedIconName = UserDefaults.standard.string(forKey: "CustomGripIcon")
+        let cachedIconBuild = UserDefaults.standard.string(forKey: "CustomGripIconBuild")
         let currentBuild = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
         let buildChanged = cachedIconBuild != currentBuild
 
@@ -1018,8 +1018,8 @@ class AppDelegate: NSObject,
             NSApplication.shared.applicationIconImage = newIcon
         }
 
-        UserDefaults.standard.set(appIconName, forKey: "CustomGhosttyIcon")
-        UserDefaults.standard.set(currentBuild, forKey: "CustomGhosttyIconBuild")
+        UserDefaults.standard.set(appIconName, forKey: "CustomGripIcon")
+        UserDefaults.standard.set(currentBuild, forKey: "CustomGripIconBuild")
     }
 
     //MARK: - Restorable State
@@ -1032,7 +1032,7 @@ class AppDelegate: NSObject,
     func application(_ app: NSApplication, willEncodeRestorableState coder: NSCoder) {
         Self.logger.debug("application will save window state")
         
-        guard ghostty.config.windowSaveState != "never" else { return }
+        guard grip.config.windowSaveState != "never" else { return }
         
         // Encode our quick terminal state if we have it.
         switch quickTerminalControllerState {
@@ -1052,7 +1052,7 @@ class AppDelegate: NSObject,
         Self.logger.debug("application will restore window state")
         
         // Decode our quick terminal state.
-        if ghostty.config.windowSaveState != "never",
+        if grip.config.windowSaveState != "never",
             let state = QuickTerminalRestorableState(coder: coder) {
             quickTerminalControllerState = .pendingRestore(state)
         }
@@ -1065,7 +1065,7 @@ class AppDelegate: NSObject,
         didReceive: UNNotificationResponse,
         withCompletionHandler: () -> Void
     ) {
-        ghostty.handleUserNotification(response: didReceive)
+        grip.handleUserNotification(response: didReceive)
         withCompletionHandler()
     }
 
@@ -1074,14 +1074,14 @@ class AppDelegate: NSObject,
         willPresent: UNNotification,
         withCompletionHandler: (UNNotificationPresentationOptions) -> Void
     ) {
-        let shouldPresent = ghostty.shouldPresentNotification(notification: willPresent)
+        let shouldPresent = grip.shouldPresentNotification(notification: willPresent)
         let options: UNNotificationPresentationOptions = shouldPresent ? [.banner, .sound] : []
         withCompletionHandler(options)
     }
 
-    //MARK: - GhosttyAppDelegate
+    //MARK: - GripAppDelegate
 
-    func findSurface(forUUID uuid: UUID) -> Ghostty.SurfaceView? {
+    func findSurface(forUUID uuid: UUID) -> Grip.SurfaceView? {
         for c in TerminalController.all {
             for view in c.surfaceTree {
                 if view.id == uuid {
@@ -1106,7 +1106,7 @@ class AppDelegate: NSObject,
 
     //MARK: - Global State
 
-    func setSecureInput(_ mode: Ghostty.SetSecureInput) {
+    func setSecureInput(_ mode: Grip.SetSecureInput) {
         let input = SecureInput.shared
         switch (mode) {
         case .on:
@@ -1125,11 +1125,11 @@ class AppDelegate: NSObject,
     //MARK: - IB Actions
 
     @IBAction func openConfig(_ sender: Any?) {
-        Ghostty.App.openConfig()
+        Grip.App.openConfig()
     }
 
     @IBAction func reloadConfig(_ sender: Any?) {
-        ghostty.reloadConfig()
+        grip.reloadConfig()
     }
 
     @IBAction func checkForUpdates(_ sender: Any?) {
@@ -1138,12 +1138,12 @@ class AppDelegate: NSObject,
     }
 
     @IBAction func newWindow(_ sender: Any?) {
-        _ = TerminalController.newWindow(ghostty)
+        _ = TerminalController.newWindow(grip)
     }
 
     @IBAction func newTab(_ sender: Any?) {
         _ = TerminalController.newTab(
-            ghostty,
+            grip,
             from: TerminalController.preferredParent?.window
         )
     }
@@ -1158,7 +1158,7 @@ class AppDelegate: NSObject,
     }
 
     @IBAction func showHelp(_ sender: Any) {
-        guard let url = URL(string: "https://ghostty.org/docs") else { return }
+        guard let url = URL(string: "https://grip.org/docs") else { return }
         NSWorkspace.shared.open(url)
     }
 
@@ -1170,12 +1170,12 @@ class AppDelegate: NSObject,
         quickController.toggle()
     }
 
-    /// Toggles visibility of all Ghosty Terminal windows. When hidden, activates Ghostty as the frontmost application
+    /// Toggles visibility of all Ghosty Terminal windows. When hidden, activates Grip as the frontmost application
     @IBAction func toggleVisibility(_ sender: Any) {
         // If we have focus, then we hide all windows.
         if NSApp.isActive {
             // Toggle visibility doesn't do anything if the focused window is native
-            // fullscreen. This is only relevant if Ghostty is active.
+            // fullscreen. This is only relevant if Grip is active.
             guard let keyWindow = NSApp.keyWindow,
                   !keyWindow.styleMask.contains(.fullScreen) else { return }
 
@@ -1220,7 +1220,7 @@ class AppDelegate: NSObject,
             self.quickTerminalPosition = .top
         }
 
-        init(_ config: Ghostty.Config) {
+        init(_ config: Grip.Config) {
             self.initialWindow = config.initialWindow
             self.shouldQuitAfterLastWindowClosed = config.shouldQuitAfterLastWindowClosed
             self.quickTerminalPosition = config.quickTerminalPosition
@@ -1302,7 +1302,7 @@ extension AppDelegate {
                 let alert = NSAlert()
                 alert.messageText = "Failed to Set Default Terminal"
                 alert.informativeText = """
-                Ghostty could not be set as the default terminal application.
+                Grip could not be set as the default terminal application.
 
                 Error: \(error.localizedDescription)
                 """

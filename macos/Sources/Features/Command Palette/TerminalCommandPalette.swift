@@ -3,14 +3,14 @@ import GhosttyKit
 
 struct TerminalCommandPaletteView: View {
     /// The surface that this command palette represents.
-    let surfaceView: Ghostty.SurfaceView
+    let surfaceView: Grip.SurfaceView
 
     /// Set this to true to show the view, this will be set to false if any actions
     /// result in the view disappearing.
     @Binding var isPresented: Bool
 
     /// The configuration so we can lookup keyboard shortcuts.
-    @ObservedObject var ghosttyConfig: Ghostty.Config
+    @ObservedObject var gripConfig: Grip.Config
     
     /// The update view model for showing update commands.
     var updateViewModel: UpdateViewModel?
@@ -30,7 +30,7 @@ struct TerminalCommandPaletteView: View {
 
                         CommandPaletteView(
                             isPresented: $isPresented,
-                            backgroundColor: ghosttyConfig.backgroundColor,
+                            backgroundColor: gripConfig.backgroundColor,
                             options: commandOptions
                         )
                         .zIndex(1) // Ensure it's on top
@@ -92,7 +92,7 @@ struct TerminalCommandPaletteView: View {
         // convey it'll go all the way through.
         let title: String
         if case .updateAvailable = updateViewModel.state {
-            title = "Update Ghostty and Restart"
+            title = "Update Grip and Restart"
         } else {
             title = updateViewModel.text
         }
@@ -120,10 +120,10 @@ struct TerminalCommandPaletteView: View {
     /// Custom commands from the command-palette-entry configuration.
     private var terminalOptions: [CommandOption] {
         guard let appDelegate = NSApp.delegate as? AppDelegate else { return [] }
-        return appDelegate.ghostty.config.commandPaletteEntries
+        return appDelegate.grip.config.commandPaletteEntries
             .filter(\.isSupported)
             .map { c in
-                let symbols = appDelegate.ghostty.config.keyboardShortcut(for: c.action)?.keyList
+                let symbols = appDelegate.grip.config.keyboardShortcut(for: c.action)?.keyList
                 return CommandOption(
                     title: c.title,
                     description: c.description,
@@ -160,7 +160,7 @@ struct TerminalCommandPaletteView: View {
                     sortKey: AnySortKey(ObjectIdentifier(surface))
                 ) {
                     NotificationCenter.default.post(
-                        name: Ghostty.Notification.ghosttyPresentTerminal,
+                        name: Grip.Notification.gripPresentTerminal,
                         object: surface
                     )
                 }

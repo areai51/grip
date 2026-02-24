@@ -27,9 +27,9 @@ extension NSPasteboard.PasteboardType {
 }
 
 extension NSPasteboard {
-    /// The pasteboard to used for Ghostty selection.
-    static var ghosttySelection: NSPasteboard = {
-        NSPasteboard(name: .init("com.mitchellh.ghostty.selection"))
+    /// The pasteboard to used for Grip selection.
+    static var gripSelection: NSPasteboard = {
+        NSPasteboard(name: .init("com.mitchellh.grip.selection"))
     }()
 
     /// Gets the contents of the pasteboard as a string following a specific set of semantics.
@@ -41,21 +41,21 @@ extension NSPasteboard {
         if let urls = readObjects(forClasses: [NSURL.self]) as? [URL],
            urls.count > 0 {
             return urls
-                .map { $0.isFileURL ? Ghostty.Shell.escape($0.path) : $0.absoluteString }
+                .map { $0.isFileURL ? Grip.Shell.escape($0.path) : $0.absoluteString }
                 .joined(separator: " ")
         }
 
         return self.string(forType: .string)
     }
 
-    /// The pasteboard for the Ghostty enum type.
-    static func ghostty(_ clipboard: ghostty_clipboard_e) -> NSPasteboard? {
+    /// The pasteboard for the Grip enum type.
+    static func grip(_ clipboard: ghostty_clipboard_e) -> NSPasteboard? {
         switch (clipboard) {
         case GHOSTTY_CLIPBOARD_STANDARD:
             return Self.general
 
         case GHOSTTY_CLIPBOARD_SELECTION:
-            return Self.ghosttySelection
+            return Self.gripSelection
 
         default:
             return nil

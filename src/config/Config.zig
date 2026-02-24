@@ -6588,6 +6588,13 @@ pub const Keybinds = struct {
             .toggle_command_palette,
         );
 
+        // Open AI panel for natural language commands
+        try self.set.put(
+            alloc,
+            .{ .key = .{ .unicode = 'i' }, .mods = inputpkg.ctrlOrSuper(.{ .shift = true }) },
+            .open_ai_panel,
+        );
+
         // Mac-specific keyboard bindings.
         if (comptime builtin.target.os.tag.isDarwin()) {
             try self.set.put(

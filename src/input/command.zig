@@ -573,6 +573,12 @@ fn actionCommands(action: Action.Key) []const Command {
             .description = "Reload the config file.",
         }},
 
+        .open_ai_panel => comptime &.{.{
+            .action = .open_ai_panel,
+            .title = "Open AI Assistant",
+            .description = "Open the AI assistant panel for natural language command generation.",
+        }},
+
         .close_surface => comptime &.{.{
             .action = .close_surface,
             .title = "Close Terminal",

@@ -668,6 +668,12 @@ pub const Action = union(enum) {
     /// Note that not all changes can be applied at runtime.
     reload_config,
 
+    /// Open the AI assistant panel for natural language command generation.
+    ///
+    /// Opens a panel where users can type natural language queries and get
+    /// command suggestions from an AI model. Requires AI backend configuration.
+    open_ai_panel,
+
     /// Close the current "surface", whether that is a window, tab, split, etc.
     ///
     /// This might trigger a close confirmation popup, depending on the value
@@ -1291,6 +1297,7 @@ pub const Action = union(enum) {
             // Obviously app actions.
             .open_config,
             .reload_config,
+            .open_ai_panel,
             .close_all_windows,
             .quit,
             .toggle_quick_terminal,

@@ -274,7 +274,7 @@ class TitlebarTabsTahoeTerminalWindow: TransparentTitlebarTerminalWindow, NSTool
         case .title:
             let item = NSToolbarItem(itemIdentifier: .title)
             item.view = NSHostingView(rootView: TitleItem(viewModel: viewModel))
-            // Fix: https://github.com/ghostty-org/ghostty/discussions/9027
+            // Fix: https://github.com/grip-org/grip/discussions/9027
             item.view?.setContentCompressionResistancePriority(.required, for: .horizontal)
             item.visibilityPriority = .user
             item.isEnabled = true
@@ -293,7 +293,7 @@ class TitlebarTabsTahoeTerminalWindow: TransparentTitlebarTerminalWindow, NSTool
 
     class ViewModel: ObservableObject {
         @Published var titleFont: NSFont?
-        @Published var title: String = "👻 Ghostty"
+        @Published var title: String = "👻 Grip"
         @Published var hasTabBar: Bool = false
         @Published var isMainWindow: Bool = true
     }
